@@ -33,7 +33,9 @@
         <input type="text" id="model-url" placeholder="Enter model URL here" size="50">
         <button onclick="loadModel()">Load Model</button>
     </div>
-    <video id="webcam" autoplay playsinline width="640" height="480"></video>
+    <div id="webcam-container">
+        <video id="webcam" autoplay playsinline width="640" height="480"></video>
+    </div>
     <div id="label-container"></div>
     <script src="script.js"></script>
 </body>
