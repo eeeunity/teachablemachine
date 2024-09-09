@@ -27,7 +27,22 @@ async function loadModel() {
         labelContainer = document.getElementById('label-container');
         labelContainer.innerHTML = ''; // Clear previous labels
         for (let i = 0; i < maxPredictions; i++) { // and class labels
-            labelContainer.appendChild(document.createElement('div'));
+            const predictionBar = document.createElement('div');
+            predictionBar.className = 'prediction-bar';
+
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+
+            const barFill = document.createElement('div');
+            barFill.className = 'bar-fill';
+            bar.appendChild(barFill);
+
+            const percentage = document.createElement('div');
+            percentage.className = 'percentage';
+
+            predictionBar.appendChild(bar);
+            predictionBar.appendChild(percentage);
+            labelContainer.appendChild(predictionBar);
         }
     } catch (error) {
         console.error('Error loading model:', error);
@@ -44,7 +59,14 @@ async function loop() {
 async function predict() {
     const prediction = await model.predict(webcam.canvas);
     for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(4)}`;
-        labelContainer.childNodes[i].innerHTML = classPrediction;
+        const classPrediction = prediction[i];
+        const percentage = (classPrediction.probability * 100).toFixed(2);
+
+        const predictionBar = labelContainer.childNodes[i];
+        const barFill = predictionBar.querySelector('.bar-fill');
+        const percentageText = predictionBar.querySelector('.percentage');
+
+        barFill.style.width = `${percentage}%`;
+        percentageText.innerHTML = `${classPrediction.className}: ${percentage}%`;
     }
 }
