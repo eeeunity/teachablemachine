@@ -5,22 +5,32 @@ async function loadModel() {
     const modelURL = document.getElementById('model-url').value + 'model.json';
     const metadataURL = document.getElementById('model-url').value + 'metadata.json';
 
-    // Load the model and metadata
-    model = await tmImage.load(modelURL, metadataURL);
-    maxPredictions = model.getTotalClasses();
+    try {
+        console.log('Loading model from:', modelURL);
+        console.log('Loading metadata from:', metadataURL);
 
-    // Setup webcam
-    const flip = true; // whether to flip the webcam
-    webcam = new tmImage.Webcam(640, 480, flip); // width, height, flip
-    await webcam.setup(); // request access to the webcam
-    await webcam.play();
-    window.requestAnimationFrame(loop);
+        // Load the model and metadata
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
 
-    // Append elements to the DOM
-    document.getElementById('webcam').appendChild(webcam.canvas);
-    labelContainer = document.getElementById('label-container');
-    for (let i = 0; i < maxPredictions; i++) { // and class labels
-        labelContainer.appendChild(document.createElement('div'));
+        console.log('Model loaded successfully');
+
+        // Setup webcam
+        const flip = true; // whether to flip the webcam
+        webcam = new tmImage.Webcam(640, 480, flip); // width, height, flip
+        await webcam.setup(); // request access to the webcam
+        await webcam.play();
+        window.requestAnimationFrame(loop);
+
+        // Append elements to the DOM
+        document.getElementById('webcam-container').appendChild(webcam.canvas);
+        labelContainer = document.getElementById('label-container');
+        labelContainer.innerHTML = ''; // Clear previous labels
+        for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement('div'));
+        }
+    } catch (error) {
+        console.error('Error loading model:', error);
     }
 }
 
