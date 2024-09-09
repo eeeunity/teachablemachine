@@ -44,7 +44,7 @@ async function loop() {
 async function predict() {
     const prediction = await model.predict(webcam.canvas);
     for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction = `${prediction[i].className}: ${prediction[i].probability.toFixed(2)}`;
+        const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
         labelContainer.childNodes[i].innerHTML = classPrediction;
     }
 }
