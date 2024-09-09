@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachable Machine Model Classifier</title>
+    <style>
+        /* Styles for the progress bars to represent prediction confidence */
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0; /* Light grey background for the bar */
+            border-radius: 5px; /* Rounded corners for the bar */
+            margin: 5px 0; /* Margin between bars */
+        }
+
+        .progress {
+            height: 20px; /* Height of the progress indicator */
+            background-color: #76c7c0; /* Color of the progress indicator */
+            border-radius: 5px; /* Rounded corners for the progress indicator */
+            width: 0%; /* Initial width set to 0, will be updated dynamically */
+            text-align: center; /* Center text inside the progress bar */
+            color: white; /* Text color */
+            line-height: 20px; /* Align text vertically */
+            font-size: 12px; /* Font size of the text inside the progress bar */
+        }
+    </style>
+</head>
+<body>
+    <h1>Teachable Machine Image Model Classifier</h1>
+    
+    <!-- Form for user to input the Teachable Machine model URL -->
+    <form id="model-form">
+
+<!-- Form to input the model URL -->
+<form id="model-form">
+    <input type="text" id="model-url" placeholder="Teachable model URL" required>
+    <button type="submit">Load Model & Start</button>
+</form>
+
+<!-- Container for the dynamically generated class input fields -->
+<div id="class-inputs-container"></div>
+
+<!-- Container for displaying the webcam feed -->
+<div id="webcam-container"></div>
+
+<!-- Container for displaying the class labels and progress bars -->
+<div id="label-container"></div>
+
+<!-- Load TensorFlow.js and Teachable Machine libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+<!-- JavaScript code to load the model, setup the webcam, and handle predictions -->
+<script type="text/javascript">
+    // Variables to hold the model, webcam instance, label container, and number of classes
+    let model, webcam, labelContainer, maxPredictions;
+    let modelURL, metadataURL;
+
+    // Function to initialize the model and webcam after user input validation
+    async function loadAndStart() {
+        // Get the user input model URL and trim any extra spaces
+        const urlInput = document.getElementById("model-url").value.trim();
+
+        // Check if the URL input is not empty
+        if (!urlInput) {
+            alert("Please enter a valid model URL."); // Show an alert if the input is empty
+            return; // Exit the function if URL is not valid
+        }
+
+        // Construct the URLs for the model and metadata JSON files
+        modelURL = urlInput + "model.json";
+        metadataURL = urlInput + "metadata.json";
+
+        try {
+            // Load the Teachable Machine model and metadata using the URLs
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses(); // Get the total number of prediction classes
+
+            // Console log the total number of classes
+            console.log("Total number of classes:", maxPredictions);
+
+            // Dynamically generate input fields for each class
+            const classInputsContainer = document.getElementById("class-inputs-container");
+            classInputsContainer.innerHTML = ""; // Clear previous inputs if any
+            for (let i = 1; i <= maxPredictions; i++) {
+                const inputDiv = document.createElement("div");
+                const inputField = document.createElement("input");
+                inputField.type = "text";
+                inputField.id = `class${i}`;
+                inputField.placeholder = `Enter API URL for class${i}`;
+                inputDiv.appendChild(inputField);
+                classInputsContainer.appendChild(inputDiv);
+            }
+
+            // Setup the webcam with the specified width, height, and flip options
+            const flip = true; // Flip the webcam feed horizontally (mirroring)
+            webcam = new tmImage.Webcam(200, 200, flip); // Create a new webcam instance
+            await webcam.setup(); // Request access to the webcam from the user
+            await webcam.play(); // Start the webcam video feed
+            window.requestAnimationFrame(loop); // Start the prediction loop
+
+            // Add the webcam feed to the DOM
+            document.getElementById("webcam-container").appendChild(webcam.canvas);
+
+            // Initialize the label container to hold the prediction results
+            labelContainer = document.getElementById("label-container");
+            labelContainer.innerHTML = ""; // Clear previous labels if any
+
+            // Create progress bars for each prediction class
+            for (let i = 0; i < maxPredictions; i++) {
+                const progressBar = document.createElement("div");
+                progressBar.classList.add("progress-bar"); // Apply progress-bar class
+                const progress = document.createElement("div");
+                progress.classList.add("progress"); // Apply progress class
+                progressBar.appendChild(progress); // Nest the progress div inside the progress bar
+                labelContainer.appendChild(progressBar); // Add the progress bar to the label container
+            }
+        } catch (error) {
+            // Handle errors if model loading fails
+            alert("Failed to load the model. Please check the model URL."); // Show error message
+            console.error(error); // Log the error to the console for debugging
+        }
+    }
+
+    // Event listener for form submission to load model and start webcam
+    document.getElementById("model-form").addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent the form from submitting in the traditional way
+        loadAndStart(); // Call the function to load the model and start the webcam
+    });
+
+    // Function to update the webcam feed and make predictions in a loop
+    async function loop() {
+        webcam.update(); // Update the webcam frame
+        await predict(); // Run predictions on the current frame
+        window.requestAnimationFrame(loop); // Continue the loop
+    }
+
+    // Function to run the image model on the webcam canvas and display predictions
+    async function predict() {
+        const prediction = await model.predict(webcam.canvas); // Get predictions from the model
+
+        // Loop through each prediction and update the progress bars
+        for (let i = 0; i < maxPredictions; i++) {
+            // Create a string for the class prediction and its probability
+            const probability = prediction[i].probability;
+            const classPrediction = prediction[i].className + ": " + (probability * 100).toFixed(2) + "%";
+            const progressBar = labelContainer.childNodes[i].querySelector(".progress"); // Find the progress element
+            progressBar.style.width = (probability * 100) + "%"; // Update the width based on prediction probability
+            progressBar.textContent = classPrediction; // Display the class prediction text inside the progress bar
+
+            // Console log the class name and its prediction probability
+            console.log(classPrediction);
+
+            // If the prediction probability is greater than 50%, call the associated API
+            if (probability > 0.5) {
+                const apiUrl = document.getElementById(`class${i + 1}`).value.trim(); // Get the API URL input for this class
+
+                if (apiUrl) { // Only make a request if the URL is not empty
+                    fetch(apiUrl, {
+                        method: 'GET', // Use GET method for API request
+                    })
+                    .then(response => response.json()) // Parse the response as JSON
+                    .then(data => {
+                        console.log(`Data for ${prediction[i].className}:`, data); // Log the API response data
+                    })
+                    .catch(error => {
+                        console.error(`Error fetching data for ${prediction[i].className}:`, error); // Log errors if any
+                    });
+                } else {
+                    console.log(`No API URL provided for ${prediction[i].className}`); // Log if no URL is provided
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>
+
