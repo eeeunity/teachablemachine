@@ -22,10 +22,17 @@
         #label-container {
             margin-top: 20px;
         }
+        #model-input-container {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Teachable Machine Webcam</h1>
+    <div id="model-input-container">
+        <input type="text" id="model-url" placeholder="Enter model URL here" size="50">
+        <button onclick="loadModel()">Load Model</button>
+    </div>
     <video id="webcam" autoplay playsinline width="640" height="480"></video>
     <div id="label-container"></div>
     <script src="script.js"></script>
