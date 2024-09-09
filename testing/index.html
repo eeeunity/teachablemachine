@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachable Machine Webcam</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        video {
+            border: 1px solid black;
+        }
+        #label-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teachable Machine Webcam</h1>
+    <video id="webcam" autoplay playsinline width="640" height="480"></video>
+    <div id="label-container"></div>
+    <script src="script.js"></script>
+</body>
+</html>
