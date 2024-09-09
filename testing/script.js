@@ -22,27 +22,15 @@ async function loadModel() {
         await webcam.play();
         window.requestAnimationFrame(loop);
 
-        // Append elements to the DOM
-        document.getElementById('webcam-container').appendChild(webcam.canvas);
+        // Clear previous elements
+        const webcamContainer = document.getElementById('webcam-container');
+        webcamContainer.innerHTML = '';
+        webcamContainer.appendChild(webcam.canvas);
+
         labelContainer = document.getElementById('label-container');
         labelContainer.innerHTML = ''; // Clear previous labels
         for (let i = 0; i < maxPredictions; i++) { // and class labels
-            const predictionBar = document.createElement('div');
-            predictionBar.className = 'prediction-bar';
-
-            const bar = document.createElement('div');
-            bar.className = 'bar';
-
-            const barFill = document.createElement('div');
-            barFill.className = 'bar-fill';
-            bar.appendChild(barFill);
-
-            const percentage = document.createElement('div');
-            percentage.className = 'percentage';
-
-            predictionBar.appendChild(bar);
-            predictionBar.appendChild(percentage);
-            labelContainer.appendChild(predictionBar);
+            labelContainer.appendChild(document.createElement('div'));
         }
     } catch (error) {
         console.error('Error loading model:', error);
@@ -59,14 +47,7 @@ async function loop() {
 async function predict() {
     const prediction = await model.predict(webcam.canvas);
     for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction = prediction[i];
-        const percentage = (classPrediction.probability * 100).toFixed(2);
-
-        const predictionBar = labelContainer.childNodes[i];
-        const barFill = predictionBar.querySelector('.bar-fill');
-        const percentageText = predictionBar.querySelector('.percentage');
-
-        barFill.style.width = `${percentage}%`;
-        percentageText.innerHTML = `${classPrediction.className}: ${percentage}%`;
+        const classPrediction = `${prediction[i].className}: ${prediction[i].probability.toFixed(2)}`;
+        labelContainer.childNodes[i].innerHTML = classPrediction;
     }
 }
