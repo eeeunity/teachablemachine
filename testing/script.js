@@ -1,9 +1,9 @@
 let model, webcam, labelContainer, maxPredictions;
 
-// Load the image model and setup the webcam
-async function init() {
-    const modelURL = 'path/to/your/model.json';
-    const metadataURL = 'path/to/your/metadata.json';
+// Function to load the model from the provided URL
+async function loadModel() {
+    const modelURL = document.getElementById('model-url').value + 'model.json';
+    const metadataURL = document.getElementById('model-url').value + 'metadata.json';
 
     // Load the model and metadata
     model = await tmImage.load(modelURL, metadataURL);
@@ -38,5 +38,3 @@ async function predict() {
         labelContainer.childNodes[i].innerHTML = classPrediction;
     }
 }
-
-init();
