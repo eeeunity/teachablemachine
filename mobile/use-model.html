@@ -37,12 +37,16 @@
 
     <script type="text/javascript">
         let model, webcam, labelContainer, maxPredictions;
+        let apiUrls = [];
 
         async function loadModel() {
             const urlParams = new URLSearchParams(window.location.search);
             const modelUrl = urlParams.get('modelUrl');
             const threshold = parseFloat(urlParams.get('threshold'));
             const interval = parseInt(urlParams.get('interval'));
+            const apiUrlsString = urlParams.get('apiUrls');
+            // Split the apiUrls string into an array, if it exists
+            apiUrls = apiUrlsString ? apiUrlsString.split(',') : [];
             
 
             if (!modelUrl || isNaN(threshold) || isNaN(interval)) {
@@ -104,7 +108,10 @@
                     lastApiCall = currentTime;
                     console.log(`Detected: ${classPrediction}`);
                     // You can implement further actions here, e.g., making API calls
-                    const apiUrl = document.getElementById(`class${i + 1}`).value.trim();
+                    
+                    
+                    const apiUrl = apiUrls[i];
+                    
                     if (apiUrl) { // Only make a request if the URL is not empty
                         fetch(apiUrl, {
                             method: 'GET', // Use GET method for API request
