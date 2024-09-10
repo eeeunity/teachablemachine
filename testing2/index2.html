@@ -27,7 +27,7 @@
     </style>
 </head>
 <body>
-    <h1>Teachable Machine Image Model Classifier V2.0</h1>
+    <h1>Teachable Machine Image Model Classifier</h1>
     
     <form id="model-form">
         <input type="text" id="model-url" placeholder="Teachable model URL" required>
@@ -44,7 +44,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <script type="text/javascript">
@@ -157,7 +156,9 @@
             const modelUrl = document.getElementById("model-url").value.trim();
             const threshold = document.getElementById("threshold").value.trim();
             const interval = document.getElementById("interval").value.trim();
-            const qrData = `Model URL: ${modelUrl}\nThreshold: ${threshold}\nInterval: ${interval}`;
+            
+            // Create a URL with query parameters
+            const qrData = `https://eeeunity.github.io/teachablemachine/testing2/use-model?modelUrl=${encodeURIComponent(modelUrl)}&threshold=${encodeURIComponent(threshold)}&interval=${encodeURIComponent(interval)}`;
 
             const qr = new QRious({
                 element: document.getElementById('qr-code'),
