@@ -202,7 +202,14 @@
             const modelUrl = document.getElementById("model-url").value.trim();
             const threshold = document.getElementById("threshold").value.trim();
             const interval = document.getElementById("interval").value.trim();
-            const qrData = `https://eeeunity.github.io/teachablemachine/mobile/use-model?modelUrl=${encodeURIComponent(modelUrl)}&threshold=${encodeURIComponent(threshold)}&interval=${encodeURIComponent(interval)}`;
+
+            let apiURLs = [];
+            for (let i = 0; i < maxPredictions; i++) {
+                const apiUrl = document.getElementById(`class${i + 1}`).value.trim();
+                apiUrls.push(apiUrl);
+            }
+            
+            const qrData = `https://eeeunity.github.io/teachablemachine/mobile/use-model?modelUrl=${encodeURIComponent(modelUrl)}&threshold=${encodeURIComponent(threshold)}&interval=${encodeURIComponent(interval)}&apiURLs=${encodeURIComponent(apiURLs)}`;
 
             const qr = new QRious({
                 element: document.getElementById('qr-code'),
