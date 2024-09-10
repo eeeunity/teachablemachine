@@ -55,6 +55,7 @@
     // Variables to hold the model, webcam instance, label container, and number of classes
     let model, webcam, labelContainer, maxPredictions;
     let modelURL, metadataURL;
+    let lastApiCall = 0;  // Time tracking for API delay
 
     // Function to initialize the model and webcam after user input validation
     async function loadAndStart() {
@@ -138,6 +139,7 @@
     // Function to run the image model on the webcam canvas and display predictions
     async function predict() {
         const prediction = await model.predict(webcam.canvas); // Get predictions from the model
+        const currentTime = new Date().getTime(); // Current time for API delay management
 
         // Loop through each prediction and update the progress bars
         for (let i = 0; i < maxPredictions; i++) {
@@ -151,8 +153,10 @@
             // Console log the class name and its prediction probability
             console.log(classPrediction);
 
-            // If the prediction probability is greater than 50%, call the associated API
-            if (probability > 0.5) {
+            // If the prediction probability is greater than 89%, call the associated API, but only once every 2.022 second
+            if (probability > 0.89 && currentTime - lastApiCall > 2022) {
+                lastApiCall = currentTime; // Update the time of the last API call
+
                 const apiUrl = document.getElementById(`class${i + 1}`).value.trim(); // Get the API URL input for this class
 
                 if (apiUrl) { // Only make a request if the URL is not empty
@@ -173,6 +177,7 @@
         }
     }
 </script>
+
+
 </body>
 </html>
-
