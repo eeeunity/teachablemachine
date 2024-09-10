@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachable Machine Model Classifier</title>
+    <style>
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .progress {
+            height: 20px;
+            background-color: #76c7c0;
+            border-radius: 5px;
+            width: 0%;
+            text-align: center;
+            color: white;
+            line-height: 20px;
+            font-size: 12px;
+        }
+        #qr-code {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teachable Machine Image Model Classifier</h1>
+    
+    <form id="model-form">
+        <input type="text" id="model-url" placeholder="Teachable model URL" required>
+        <input type="number" id="threshold" placeholder="Recognition Threshold (0-1)" step="0.01" min="0" max="1" required>
+        <input type="number" id="interval" placeholder="Recognition Interval (ms)" required>
+        <button type="submit">Load Model & Start</button>
+    </form>
+
+    <div id="class-inputs-container"></div>
+    <div id="webcam-container"></div>
+    <div id="label-container"></div>
+    <button id="generate-qr">Generate QR Code</button>
+    <div id="qr-code"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-qrcode/1.0/jquery.qrcode.min.js"></script>
+
+    <script type="text/javascript">
+        let model, webcam, labelContainer, maxPredictions;
+        let modelURL, metadataURL;
+        let lastApiCall = 0;
+
+        async function loadAndStart() {
+            const urlInput = document.getElementById("model-url").value.trim();
+            const threshold = parseFloat(document.getElementById("threshold").value);
+            const interval = parseInt(document.getElementById("interval").value);
+
+            if (!urlInput) {
+                alert("Please enter a valid model URL.");
+                return;
+            }
+
+            modelURL = urlInput + "model.json";
+            metadataURL = urlInput + "metadata.json";
+
+            try {
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+
+                const classInputsContainer = document.getElementById("class-inputs-container");
+                classInputsContainer.innerHTML = "";
+                for (let i = 1; i <= maxPredictions; i++) {
+                    const inputDiv = document.createElement("div");
+                    const inputField = document.createElement("input");
+                    inputField.type = "text";
+                    inputField.id = `class${i}`;
+                    inputField.placeholder = `Enter API URL for class ${i}`;
+                    inputDiv.appendChild(inputField);
+                    classInputsContainer.appendChild(inputDiv);
+                }
+
+                const flip = true;
+                webcam = new tmImage.Webcam(200, 200, flip);
+                await webcam.setup();
+                await webcam.play();
+                window.requestAnimationFrame(loop);
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
+                labelContainer = document.getElementById("label-container");
+                labelContainer.innerHTML = "";
+
+                for (let i = 0; i < maxPredictions; i++) {
+                    const progressBar = document.createElement("div");
+                    progressBar.classList.add("progress-bar");
+                    const progress = document.createElement("div");
+                    progress.classList.add("progress");
+                    progressBar.appendChild(progress);
+                    labelContainer.appendChild(progressBar);
+                }
+
+                // Store threshold and interval for later use
+                window.threshold = threshold;
+                window.interval = interval;
+
+            } catch (error) {
+                alert("Failed to load the model. Please check the model URL.");
+                console.error(error);
+            }
+        }
+
+        document.getElementById("model-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            loadAndStart();
+        });
+
+        async function loop() {
+            webcam.update();
+            await predict();
+            window.requestAnimationFrame(loop);
+        }
+
+        async function predict() {
+            const prediction = await model.predict(webcam.canvas);
+            const currentTime = new Date().getTime();
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const probability = prediction[i].probability;
+                const classPrediction = prediction[i].className + ": " + (probability * 100).toFixed(2) + "%";
+                const progressBar = labelContainer.childNodes[i].querySelector(".progress");
+                progressBar.style.width = (probability * 100) + "%";
+                progressBar.textContent = classPrediction;
+
+                console.log(classPrediction);
+
+                if (probability > window.threshold && currentTime - lastApiCall > window.interval) {
+                    lastApiCall = currentTime;
+
+                    const apiUrl = document.getElementById(`class${i + 1}`).value.trim();
+                    if (apiUrl) {
+                        fetch(apiUrl, { method: 'GET' })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(`Data for ${prediction[i].className}:`, data);
+                            })
+                            .catch(error => {
+                                console.error(`Error fetching data for ${prediction[i].className}:`, error);
+                            });
+                    } else {
+                        console.log(`No API URL provided for ${prediction[i].className}`);
+                    }
+                }
+            }
+        }
+
+        document.getElementById("generate-qr").addEventListener("click", function() {
+            const modelUrl = document.getElementById("model-url").value.trim();
+            const threshold = document.getElementById("threshold").value.trim();
+            const interval = document.getElementById("interval").value.trim();
+            const qrData = `Model URL: ${modelUrl}\nThreshold: ${threshold}\nInterval: ${interval}`;
+            
+            $('#qr-code').empty(); // Clear previous QR code
+            $('#qr-code').qrcode({
+                width: 128,
+                height: 128,
+                text: qrData // The text data to encode in the QR code
+            });
+        });
+    </script>
+</body>
+</html>
