@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Use Teachable Machine Model</title>
+    <style>
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .progress {
+            height: 20px;
+            background-color: #76c7c0;
+            border-radius: 5px;
+            width: 0%;
+            text-align: center;
+            color: white;
+            line-height: 20px;
+            font-size: 12px;
+        }
+        #webcam-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teachable Machine Model Classifier</h1>
+    
+    <div id="webcam-container"></div>
+    <div id="label-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+    <script type="text/javascript">
+        let model, webcam, labelContainer, maxPredictions;
+
+        async function loadModel() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const modelUrl = urlParams.get('modelUrl');
+            const threshold = parseFloat(urlParams.get('threshold'));
+            const interval = parseInt(urlParams.get('interval'));
+
+            if (!modelUrl || isNaN(threshold) || isNaN(interval)) {
+                alert("Invalid parameters. Please check the URL.");
+                return;
+            }
+
+            const modelURL = modelUrl + "model.json";
+            const metadataURL = modelUrl + "metadata.json";
+
+            try {
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+
+                labelContainer = document.getElementById("label-container");
+                labelContainer.innerHTML = "";
+                for (let i = 0; i < maxPredictions; i++) {
+                    const progressBar = document.createElement("div");
+                    progressBar.classList.add("progress-bar");
+                    const progress = document.createElement("div");
+                    progress.classList.add("progress");
+                    progressBar.appendChild(progress);
+                    labelContainer.appendChild(progressBar);
+                }
+
+                const flip = true; // flip the webcam
+                webcam = new tmImage.Webcam(200, 200, flip);
+                await webcam.setup();
+                await webcam.play();
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
+
+                window.requestAnimationFrame(() => loop(threshold, interval));
+
+            } catch (error) {
+                alert("Failed to load the model. Please check the model URL.");
+                console.error(error);
+            }
+        }
+
+        async function loop(threshold, interval) {
+            webcam.update();
+            await predict(threshold, interval);
+            window.requestAnimationFrame(() => loop(threshold, interval));
+        }
+
+        async function predict(threshold, interval) {
+            const prediction = await model.predict(webcam.canvas);
+            const currentTime = new Date().getTime();
+            let lastApiCall = 0;
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const probability = prediction[i].probability;
+                const classPrediction = prediction[i].className + ": " + (probability * 100).toFixed(2) + "%";
+                const progressBar = labelContainer.childNodes[i].querySelector(".progress");
+                progressBar.style.width = (probability * 100) + "%";
+                progressBar.textContent = classPrediction;
+
+                if (probability > threshold && currentTime - lastApiCall > interval) {
+                    lastApiCall = currentTime;
+                    console.log(`Detected: ${classPrediction}`);
+                    // You can implement further actions here, e.g., making API calls
+                }
+            }
+        }
+
+        // Load the model when the page loads
+        window.onload = loadModel;
+    </script>
+</body>
+</html>
