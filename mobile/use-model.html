@@ -43,7 +43,7 @@
             const modelUrl = urlParams.get('modelUrl');
             const threshold = parseFloat(urlParams.get('threshold'));
             const interval = parseInt(urlParams.get('interval'));
-            const apiURLs = parse
+            
 
             if (!modelUrl || isNaN(threshold) || isNaN(interval)) {
                 alert("Invalid parameters. Please check the URL.");
@@ -105,6 +105,21 @@
                     console.log(`Detected: ${classPrediction}`);
                     // You can implement further actions here, e.g., making API calls
                     const apiUrl = document.getElementById(`class${i + 1}`).value.trim();
+                    if (apiUrl) { // Only make a request if the URL is not empty
+                        fetch(apiUrl, {
+                            method: 'GET', // Use GET method for API request
+                        })
+                        //.then(response => response.json()) // Parse the response as JSON
+                        /*.then(data => {
+                            console.log(`Data for ${prediction[i].className}:`, data); // Log the API response data
+                        })
+                        .catch(error => {
+                            console.error(`Error fetching data for ${prediction[i].className}:`, error); // Log errors if any
+                        })*/
+                        ;
+                    } else {
+                        console.log(`No API URL provided for ${prediction[i].className}`); // Log if no URL is provided
+                    }
                 }
             }
         }
