@@ -38,6 +38,8 @@
     <script type="text/javascript">
         let model, webcam, labelContainer, maxPredictions;
         let apiUrls = [];
+        let lastApiCall = 0;
+
 
         async function loadModel() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -95,8 +97,7 @@
         async function predict(threshold, interval) {
             const prediction = await model.predict(webcam.canvas);
             const currentTime = new Date().getTime();
-            let lastApiCall = 0;
-
+            
             for (let i = 0; i < maxPredictions; i++) {
                 const probability = prediction[i].probability;
                 const classPrediction = prediction[i].className + ": " + (probability * 100).toFixed(2) + "%";
