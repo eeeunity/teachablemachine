@@ -43,6 +43,7 @@
             const modelUrl = urlParams.get('modelUrl');
             const threshold = parseFloat(urlParams.get('threshold'));
             const interval = parseInt(urlParams.get('interval'));
+            const apiURLs = parse
 
             if (!modelUrl || isNaN(threshold) || isNaN(interval)) {
                 alert("Invalid parameters. Please check the URL.");
@@ -103,6 +104,7 @@
                     lastApiCall = currentTime;
                     console.log(`Detected: ${classPrediction}`);
                     // You can implement further actions here, e.g., making API calls
+                    const apiUrl = document.getElementById(`class${i + 1}`).value.trim();
                 }
             }
         }
