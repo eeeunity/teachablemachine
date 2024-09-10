@@ -49,7 +49,7 @@
     </style>
 </head>
 <body>
-    <h1>Teachable Machine Model Classifier V1.1</h1>
+    <h1>Teachable Machine Model Classifier V2.0</h1>
 
     <!-- Model Input -->
     <input type="text" id="model-url" placeholder="Teachable model URL" required>
@@ -66,6 +66,9 @@
     <!-- Interval Input -->
     <input type="number" id="interval" placeholder="Recognition Interval (ms)" required>
 
+    <!-- Start Button -->
+    <button id="start-recognition" disabled>Start Recognition</button>
+
     <!-- Webcam Container -->
     <div id="webcam-container"></div>
     <div id="label-container"></div>
@@ -80,7 +83,7 @@
 
     <script type="text/javascript">
         let model, webcam, labelContainer, maxPredictions;
-        let classApiUrls = [];
+        let isRecognitionStarted = false;
 
         document.getElementById("threshold").addEventListener("input", function() {
             document.getElementById("threshold-value").innerText = this.value;
@@ -105,7 +108,6 @@
                 classInputsContainer.innerHTML = "";
 
                 // Create input fields for each class
-                classApiUrls = [];
                 for (let i = 0; i < maxPredictions; i++) {
                     const inputDiv = document.createElement("div");
                     const inputField = document.createElement("input");
@@ -114,7 +116,6 @@
                     inputField.placeholder = `Enter API URL for class ${i + 1}`;
                     inputDiv.appendChild(inputField);
                     classInputsContainer.appendChild(inputDiv);
-                    classApiUrls.push(inputField);
                 }
 
                 // Setup webcam
@@ -135,8 +136,8 @@
                     labelContainer.appendChild(progressBar);
                 }
 
-                // Start prediction loop
-                window.requestAnimationFrame(() => loop());
+                // Enable the start button
+                document.getElementById("start-recognition").disabled = false;
 
             } catch (error) {
                 alert("Failed to load the model. Please check the model URL.");
@@ -144,7 +145,14 @@
             }
         });
 
+        document.getElementById("start-recognition").addEventListener("click", function() {
+            isRecognitionStarted = true;
+            loop();
+            this.disabled = true; // Disable the button after starting recognition
+        });
+
         async function loop() {
+            if (!isRecognitionStarted) return;
             webcam.update();
             await predict();
             window.requestAnimationFrame(loop);
@@ -167,7 +175,7 @@
                 if (probability > threshold && currentTime - lastApiCall > interval) {
                     lastApiCall = currentTime;
 
-                    const apiUrl = classApiUrls[i].value.trim();
+                    const apiUrl = document.getElementById(`class${i + 1}`).value.trim();
                     if (apiUrl) {
                         fetch(apiUrl, { method: 'GET' })
                             .then(response => response.json())
