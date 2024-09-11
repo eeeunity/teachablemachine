@@ -32,6 +32,7 @@
     .progress-bar {
         width: 100%;
         max-width: 640px; /* Maximum width */
+        overflow: hidden; /* Ensure the inner progress doesn't overflow */
         background-color: #f0d3d3; /* Light red for the bar */
         border-radius: 5px;
         margin: 5px 0;
@@ -40,7 +41,7 @@
         height: 20px;
         background-color: #ff4d4d; /* Bright red for the progress */
         border-radius: 5px;
-        width: 100%;
+        width: 0%;
         text-align: center;
         color: white;
         line-height: 20px;
