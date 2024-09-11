@@ -74,7 +74,7 @@
 </head>
 <body>
     <h1>EEE, PolyU</h1>
-    <h1>Teachable Machine Model Classifier V3.1</h1>
+    <h1>Teachable Machine Model Classifier V3.2</h1>
 
     <!-- Model Input -->
     <input type="text" id="model-url" placeholder="Teachable model URL" required>
@@ -238,6 +238,11 @@
         }
 
         document.getElementById("generate-qr").addEventListener("click", function() {
+            // Stop recognition when generating the QR code
+            isRecognitionStarted = false; // Stop the recognition loop
+            document.getElementById("start-recognition").disabled = false; // Enable the start button
+            document.getElementById("stop-recognition").disabled = true; // Disable the stop button
+            
             const modelUrl = document.getElementById("model-url").value.trim();
             const threshold = document.getElementById("threshold").value.trim();
             const interval = document.getElementById("interval").value.trim();
