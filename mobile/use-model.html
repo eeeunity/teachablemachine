@@ -5,24 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Use Teachable Machine Model</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff5f5; /* Light red background */
+        }
+        h1 {
+            color: #b30000; /* Dark red text */
+            font-size: 1.5em; /* Responsive font size */
+            text-align: center;
+        }
         .progress-bar {
             width: 100%;
-            background-color: #e0e0e0;
+            max-width: 90%; /* Max width adjusted for mobile */
+            background-color: #f0d3d3; /* Light red for the bar */
             border-radius: 5px;
             margin: 5px 0;
         }
         .progress {
             height: 20px;
-            background-color: #76c7c0;
+            background-color: #ff4d4d; /* Bright red for the progress */
             border-radius: 5px;
-            width: 0%;
+            width: 0%; /* Start width */
             text-align: center;
             color: white;
-            line-height: 20px;
+            line-height: 20px; /* Center text vertically */
             font-size: 12px;
+            white-space: nowrap; /* Prevent text from wrapping */
+            overflow: hidden; /* Hide overflow text */
         }
         #webcam-container {
             margin-top: 20px;
+            border: 1px solid #b30000; /* Darker red border */
+            width: 90%; /* Adjusted for mobile */
+            max-width: 400px; /* Maximum width for larger screens */
+            height: auto; /* Auto height for responsive design */
+            aspect-ratio: 4 / 3; /* Maintain aspect ratio */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffffff; /* White background for the webcam container */
+        }
+        #label-container {
+            width: 100%; /* Full width */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center align progress bars */
         }
     </style>
 </head>
