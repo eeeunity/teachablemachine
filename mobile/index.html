@@ -34,6 +34,11 @@
     button:hover {
         background-color: #990000; /* Darker red on hover */
     }
+    button:disabled {
+    background-color: #cccccc; /* Light gray background for disabled */
+    color: #666666; /* Dark gray text for disabled */
+    cursor: not-allowed; /* Not-allowed cursor */
+    }
     .progress-bar {
         width: 640px;
         //max-width: 640px; /* Maximum width */
@@ -69,7 +74,7 @@
 </head>
 <body>
     <h1>EEE, PolyU</h1>
-    <h1>Teachable Machine Model Classifier V3.0</h1>
+    <h1>Teachable Machine Model Classifier V3.1</h1>
 
     <!-- Model Input -->
     <input type="text" id="model-url" placeholder="Teachable model URL" required>
