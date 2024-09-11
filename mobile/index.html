@@ -74,7 +74,7 @@
 </head>
 <body>
     <h1>EEE, PolyU</h1>
-    <h1>Teachable Machine Model Classifier V3.2</h1>
+    <h1>Teachable Machine Model Classifier V3.3</h1>
 
     <!-- Model Input -->
     <input type="text" id="model-url" placeholder="Teachable model URL" required>
@@ -94,6 +94,7 @@
     <!-- Start and Stop Buttons -->
     <button id="start-recognition" disabled>Start Recognition</button>
     <button id="stop-recognition" disabled>Stop Recognition</button>
+    <p id="status-message" style="color: #b30000; font-weight: bold;"></p>
 
     <!-- Webcam Container -->
     <div id="webcam-container"></div>
@@ -177,12 +178,14 @@
             loop();
             this.disabled = true; // Disable the button after starting recognition
             document.getElementById("stop-recognition").disabled = false; // Enable stop button
+            document.getElementById("status-message").innerText = "Recognition is running..."; // Update status message
         });
 
         document.getElementById("stop-recognition").addEventListener("click", function() {
             isRecognitionStarted = false;
             this.disabled = true; // Disable the stop button after stopping recognition
             document.getElementById("start-recognition").disabled = false; // Enable start button
+            document.getElementById("status-message").innerText = "Recognition has been stopped."; // Update status message
         });
         
         async function loop() {
@@ -242,6 +245,7 @@
             isRecognitionStarted = false; // Stop the recognition loop
             document.getElementById("start-recognition").disabled = false; // Enable the start button
             document.getElementById("stop-recognition").disabled = true; // Disable the stop button
+            document.getElementById("status-message").innerText = "Recognition has been stopped."; // Update status message
             
             const modelUrl = document.getElementById("model-url").value.trim();
             const threshold = document.getElementById("threshold").value.trim();
