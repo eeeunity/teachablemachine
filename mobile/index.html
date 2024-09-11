@@ -5,47 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teachable Machine Model Classifier</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        input, button, select {
-            margin: 10px 0;
-            width: 640px;
-            padding: 10px;
-            font-size: 16px;
-        }
-        .progress-bar {
-            width: 100%;
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            margin: 5px 0;
-        }
-        .progress {
-            height: 20px;
-            background-color: #76c7c0;
-            border-radius: 5px;
-            width: 0%;
-            text-align: center;
-            color: white;
-            line-height: 20px;
-            font-size: 12px;
-        }
-        #webcam-container {
-            margin-top: 20px;
-            border: 1px solid #ccc;
-            width: 640px;
-            height: 480px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        #qr-code {
-            margin-top: 20px;
-        }
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #fff5f5; /* Light red background */
+    }
+    input, button, select {
+        margin: 10px 0;
+        width: 640px;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #b30000; /* Darker red border */
+        border-radius: 5px; /* Rounded corners */
+    }
+    button {
+        background-color: #b30000; /* Dark red button */
+        color: white; /* White text */
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #990000; /* Darker red on hover */
+    }
+    .progress-bar {
+        width: 100%;
+        background-color: #f0d3d3; /* Light red for the bar */
+        border-radius: 5px;
+        margin: 5px 0;
+    }
+    .progress {
+        height: 20px;
+        background-color: #ff4d4d; /* Bright red for the progress */
+        border-radius: 5px;
+        width: 0%;
+        text-align: center;
+        color: white;
+        line-height: 20px;
+        font-size: 12px;
+    }
+    #webcam-container {
+        margin-top: 20px;
+        border: 1px solid #b30000; /* Darker red border */
+        width: 640px;
+        height: 480px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #fff; /* White background for the container */
+    }
+    #qr-code {
+        margin-top: 20px;
+    }
     </style>
 </head>
 <body>
@@ -121,7 +133,7 @@
 
                 // Setup webcam
                 const flip = true;
-                webcam = new tmImage.Webcam(480, 480, flip);
+                webcam = new tmImage.Webcam(400, 400, flip);
                 await webcam.setup();
                 await webcam.play();
                 document.getElementById("webcam-container").appendChild(webcam.canvas);
