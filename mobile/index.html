@@ -167,10 +167,11 @@
             }
         });
 
-        document.getElementById("start-recognition").addEventListener("click", function() {
+         document.getElementById("start-recognition").addEventListener("click", function() {
             isRecognitionStarted = true;
             loop();
             this.disabled = true; // Disable the button after starting recognition
+            document.getElementById("stop-recognition").disabled = false; // Enable stop button
         });
 
         document.getElementById("stop-recognition").addEventListener("click", function() {
