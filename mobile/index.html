@@ -86,8 +86,9 @@
     <!-- Interval Input -->
     <input type="number" id="interval" placeholder="Recognition Interval (ms)" required>
 
-    <!-- Start Button -->
+    <!-- Start and Stop Buttons -->
     <button id="start-recognition" disabled>Start Recognition</button>
+    <button id="stop-recognition" disabled>Stop Recognition</button>
 
     <!-- Webcam Container -->
     <div id="webcam-container"></div>
@@ -172,6 +173,12 @@
             this.disabled = true; // Disable the button after starting recognition
         });
 
+        document.getElementById("stop-recognition").addEventListener("click", function() {
+            isRecognitionStarted = false;
+            this.disabled = true; // Disable the stop button after stopping recognition
+            document.getElementById("start-recognition").disabled = false; // Enable start button
+        });
+        
         async function loop() {
             if (!isRecognitionStarted) return;
             webcam.update();
