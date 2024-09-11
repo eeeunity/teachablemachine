@@ -74,7 +74,7 @@
 </head>
 <body>
     <h1>EEE, PolyU</h1>
-    <h1>Teachable Machine Model Classifier V3.3</h1>
+    <h1>Teachable Machine Model Classifier V3.4</h1>
 
     <!-- Model Input -->
     <input type="text" id="model-url" placeholder="Teachable model URL" required>
@@ -141,7 +141,7 @@
                     const inputField = document.createElement("input");
                     inputField.type = "text";
                     inputField.id = `class${i + 1}`;
-                    inputField.placeholder = `Enter API URL for class ${i + 1}`;
+                    inputField.placeholder = `Enter API URL for ${model.getClassName(i)}`;
                     inputDiv.appendChild(inputField);
                     classInputsContainer.appendChild(inputDiv);
                 }
