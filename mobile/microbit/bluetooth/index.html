@@ -1,1 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachable Machine Model Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff5f5; /* Light red background */
+        }
+        h1 {
+            color: #b30000; /* Dark red text */
+            text-align: center;
+        }
+        input, button, select {
+            margin: 10px 0;
+            width: 640px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #b30000; /* Darker red border */
+            border-radius: 5px; /* Rounded corners */
+        }
+        button {
+            background-color: #b30000; /* Dark red button */
+            color: white; /* White text */
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #990000; /* Darker red on hover */
+        }
+        button:disabled {
+            background-color: #cccccc; /* Light gray background for disabled */
+            color: #666666; /* Dark gray text for disabled */
+            cursor: not-allowed; /* Not-allowed cursor */
+        }
+        .progress-bar {
+            width: 640px;
+            background-color: #f0d3d3; /* Light red for the bar */
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .progress {
+            height: 20px;
+            background-color: #ff4d4d; /* Bright red for the progress */
+            border-radius: 5px;
+            width: 0%;
+            text-align: center;
+            color: white;
+            white-space: nowrap; /* Prevent text from wrapping */
+            line-height: 20px;
+            font-size: 12px;
+        }
+        #webcam-container {
+            margin-top: 20px;
+            border: 1px solid #b30000; /* Darker red border */
+            width: 640px;
+            height: 480px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff; /* White background for the container */
+        }
+    </style>
+</head>
+<body>
+    <h1>Department of Electrical and Electronic Engineering</h1>
+    <h1>The Hong Kong Polytechnic University</h1>
+    <h1>Teachable Machine Model Classifier with Micro:bit Bluetooth V1.0</h1>
 
+    <!-- Model Input -->
+    <input type="text" id="model-url" placeholder="Teachable model URL" required>
+    <button id="load-model">Load Model</button>
+
+    <!-- Threshold Slider -->
+    <label for="threshold">Recognition Threshold (0-1):</label>
+    <input type="range" id="threshold" min="0" max="1" step="0.01" value="0.5">
+    <span id="threshold-value">0.5</span>
+
+    <!-- Interval Input -->
+    <input type="number" id="interval" placeholder="Recognition Interval (ms)" required>
+
+    <!-- Start and Stop Buttons -->
+    <button id="start-recognition" disabled>Start Recognition</button>
+    <button id="stop-recognition" disabled>Stop Recognition</button>
+    <p id="status-message" style="color: #b30000; font-weight: bold;"></p>
+
+    <!-- Webcam Container -->
+    <div id="webcam-container"></div>
+    <div id="label-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+    <script type="text/javascript">
+        let model, webcam, labelContainer, maxPredictions;
+        let isRecognitionStarted = false;
+        let lastApiCall = 0;
+        let bluetoothDevice;
+        let bluetoothCharacteristic;
+
+        document.getElementById("threshold").addEventListener("input", function() {
+            document.getElementById("threshold-value").innerText = this.value;
+        });
+
+        document.getElementById("load-model").addEventListener("click", async function() {
+            const urlInput = document.getElementById("model-url").value.trim();
+            if (!urlInput) {
+                alert("Please enter a valid model URL.");
+                return;
+            }
+
+            const modelURL = urlInput + "model.json";
+            const metadataURL = urlInput + "metadata.json";
+
+            try {
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+
+                // Setup webcam
+                const flip = true;
+                webcam = new tmImage.Webcam(400, 400, flip);
+                await webcam.setup();
+                await webcam.play();
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
+                labelContainer = document.getElementById("label-container");
+                labelContainer.innerHTML = "";
+
+                for (let i = 0; i < maxPredictions; i++) {
+                    const progressBar = document.createElement("div");
+                    progressBar.classList.add("progress-bar");
+                    const progress = document.createElement("div");
+                    progress.classList.add("progress");
+                    progressBar.appendChild(progress);
+                    labelContainer.appendChild(progressBar);
+                }
+
+                // Enable the start button
+                document.getElementById("start-recognition").disabled = false;
+
+            } catch (error) {
+                alert("Failed to load the model. Please check the model URL.");
+                console.error(error);
+            }
+        });
+
+        document.getElementById("start-recognition").addEventListener("click", async function() {
+            await connectMicrobit();
+            isRecognitionStarted = true;
+            loop();
+            this.disabled = true; // Disable the button after starting recognition
+            document.getElementById("stop-recognition").disabled = false; // Enable stop button
+            document.getElementById("status-message").innerText = "Recognition is running..."; // Update status message
+        });
+
+        document.getElementById("stop-recognition").addEventListener("click", function() {
+            isRecognitionStarted = false;
+            this.disabled = true; // Disable the stop button after stopping recognition
+            document.getElementById("start-recognition").disabled = false; // Enable start button
+            document.getElementById("status-message").innerText = "Recognition has been stopped."; // Update status message
+        });
+
+        async function connectMicrobit() {
+            try {
+                     bluetoothDevice = await navigator.bluetooth.requestDevice({
+                     filters: [{ namePrefix: 'BBC micro:bit' }],
+                      optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e'] // Corrected UUID
+                     });
+
+                    const server = await bluetoothDevice.gatt.connect();
+                    const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e'); // Corrected UUID
+                     bluetoothCharacteristic = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e'); // TX Characteristic
+
+                    console.log('Connected to micro:bit');
+
+            } catch (error) {
+                console.error('Error connecting to micro:bit:', error);
+            }
+        }
+        
+
+
+
+        async function loop() {
+            if (!isRecognitionStarted) return;
+            webcam.update();
+            await predict();
+            window.requestAnimationFrame(loop);
+        }
+
+        async function predict() {
+            const prediction = await model.predict(webcam.canvas);
+            const currentTime = new Date().getTime();
+            const threshold = parseFloat(document.getElementById("threshold").value);
+            const interval = parseInt(document.getElementById("interval").value);
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const probability = prediction[i].probability;
+                const classPrediction = prediction[i].className + ": " + (probability * 100).toFixed(2) + "%";
+                const progressBar = labelContainer.childNodes[i].querySelector(".progress");
+                progressBar.style.width = (probability * 100) + "%";
+                progressBar.textContent = classPrediction;
+
+                if (probability > threshold && currentTime - lastApiCall > interval) {
+                    lastApiCall = currentTime;
+
+                    // Send class name to micro:bit via Bluetooth
+                    if (bluetoothCharacteristic) {
+                        const className = prediction[i].className;
+                        const encoder = new TextEncoder();
+                        await bluetoothCharacteristic.writeValue(encoder.encode(className + '\n'));
+                        console.log(`Sent to micro:bit: ${className}`);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
